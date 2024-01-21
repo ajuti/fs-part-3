@@ -3,7 +3,7 @@ const app = express()
 
 app.use(express.json())
 
-const persons = [
+let persons = [
   {
     name: "Arto Hellas",
     number: "040-123456",
@@ -42,6 +42,52 @@ app.get("/api/persons/:id", (req, res) => {
   } else {
     res.status(404).end()
   }
+})
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = req.params.id - 1
+  if (persons[id]) {
+    console.log(`Deleted record with id ${id + 1}`)
+    persons = persons.filter(x => x.id != (id + 1))
+    res.status(204).end()
+  } else {
+    res.status(404).end()
+  }
+})
+
+app.post("/api/persons", (req, res) => {
+  const id = Math.floor(Math.random() * 10000)
+  const body = req.body
+  let errFlag = false
+  const errors = {}
+  console.log(body)
+
+  if (!body.name) {
+    errFlag = true
+    errors.name = "field is missing" 
+  }
+  if (persons.map(x => x.name).includes(body.name)) {
+    errFlag = true
+    errors.name = "must be unique"
+  }
+  if (!body.number) {
+    errFlag = true
+    errors.number = "field is missing"
+  }
+  if (errFlag) {
+    console.log("errors found")
+    return res.status(400).json(errors)
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: id
+  }
+  
+  persons = persons.concat(person) 
+  console.log("person added")
+  res.json(person)
 })
 
 const PORT = 3001

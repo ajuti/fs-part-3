@@ -6,7 +6,7 @@ morgan.token("payload", function(req, res) { return JSON.stringify(req.body) })
 const app = express()
 
 app.use(cors())
-app.use(express.static("dist"))
+// app.use(express.static("dist"))
 app.use(express.json())
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms :payload"))
 
@@ -48,20 +48,22 @@ app.get("/info", (req, res) => {
 })
 
 app.get("/api/persons/:id", (req, res) => {
-  const id = req.params.id - 1
-  if (persons[id]) {
-    res.json(persons[id])
+  const id = req.params.id
+  const person = persons.find(x => x.id == id)
+  if (person) {
+    res.json(person)
   } else {
     res.status(404).end()
   }
 })
 
 app.delete("/api/persons/:id", (req, res) => {
-  const id = req.params.id - 1
-  if (persons[id]) {
-    console.log(`Deleted record with id ${id + 1}`)
-    persons = persons.filter(x => x.id != (id + 1))
-    res.status(204).end()
+  const id = req.params.id
+  const person = persons.find(x => x.id == id)
+  if (person) {
+    console.log(`Deleted record with id ${id}`, person)
+    persons = persons.filter(x => x.id != (id))
+    res.status(200).json(person)
   } else {
     res.status(404).end()
   }
@@ -72,7 +74,6 @@ app.post("/api/persons", (req, res) => {
   const body = req.body
   let errFlag = false
   const errors = {}
-  console.log(body)
 
   if (!body.name) {
     errFlag = true

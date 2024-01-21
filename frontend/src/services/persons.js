@@ -4,7 +4,10 @@ const baseUrl = `/api/persons`
 
 const create = (personObject) => {
   const req = axios.post(baseUrl, personObject)
-  return req.then(response => response.data)
+  return req.then(response => {
+    console.log("this is response from create: ", response)
+    return response.data
+  })
 }
 
 const getAll = () => {
@@ -18,7 +21,7 @@ const getAll = () => {
 const destroy = (id) => {
   const req = axios.delete(`${baseUrl}/${id}`)
   return req.then(response => {
-    console.log(`deleted contact with with ${id}`)
+    console.log(`deleted contact with with ${id}`, response)
     return response.data
   })
 }

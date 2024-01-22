@@ -48,13 +48,9 @@ app.delete("/api/persons/:id", (req, res, next) => {
 })
 
 app.put("/api/persons/:id", (req, res, next) => {
-  const body = req.body
-  const person = {
-    name: body.name,
-    number: body.number
-  }
+  const {name, number} = req.body
 
-  Person.findByIdAndUpdate(req.params.id, person, {new: true})
+  Person.findByIdAndUpdate(req.params.id, {name, number}, {new: true, runValidators: true, context: 'query'})
     .then(updatedPerson => {
       console.log(updatedPerson)
       res.status(200).json(updatedPerson)
@@ -62,33 +58,19 @@ app.put("/api/persons/:id", (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body
-  let errFlag = false
-  const errors = {}
-
-  if (!body.name) {
-    errFlag = true
-    errors.name = "field is missing" 
-  }
-  if (!body.number) {
-    errFlag = true
-    errors.number = "field is missing"
-  }
-  if (errFlag) {
-    console.log("errors found")
-    return res.status(400).json(errors)
-  }
 
   const person = new Person({
     name: body.name,
     number: body.number,
   })
   
-  console.log("person added")
-  person.save().then(savedPerson => {
-    res.json(savedPerson)
-  })
+  person.save()
+    .then(savedPerson => {
+      res.json(savedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.use(errorHandler)

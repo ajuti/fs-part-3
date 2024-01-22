@@ -6,11 +6,11 @@ GET http://localhost:3001/info
 
 ###
 
-GET http://localhost:3001/api/persons/65ae53ee7f24c6652c3230b
+GET http://localhost:3001/api/persons/65ae53ee7f24c6652c3230be
 
 ###
 
-DELETE http://localhost:3001/api/persons/2
+DELETE http://localhost:3001/api/persons/insert_id
 
 ### 
 
@@ -21,3 +21,7 @@ content-type: application/json
   "name": "Jesse H",
   "number": "444444"
 }
+
+###
+
+GET http://localhost:3001/random

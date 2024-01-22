@@ -1,6 +1,9 @@
+require("dotenv").config()
 const express = require("express")
 const morgan = require("morgan")
 const cors = require("cors")
+const Person = require("./models/person")
+
 morgan.token("payload", function(req, res) { return JSON.stringify(req.body) })
 
 const app = express()
@@ -39,7 +42,9 @@ let persons = [
 ]
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
 })
 
 app.get("/info", (req, res) => {
@@ -48,13 +53,18 @@ app.get("/info", (req, res) => {
 })
 
 app.get("/api/persons/:id", (req, res) => {
-  const id = req.params.id
-  const person = persons.find(x => x.id == id)
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).end()
-  }
+  Person.findById(req.params.id)
+    .then(person => {
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(500).end()
+    })
 })
 
 app.delete("/api/persons/:id", (req, res) => {
@@ -70,7 +80,6 @@ app.delete("/api/persons/:id", (req, res) => {
 })
 
 app.post("/api/persons", (req, res) => {
-  const id = Math.floor(Math.random() * 10000)
   const body = req.body
   let errFlag = false
   const errors = {}
@@ -78,10 +87,6 @@ app.post("/api/persons", (req, res) => {
   if (!body.name) {
     errFlag = true
     errors.name = "field is missing" 
-  }
-  if (persons.map(x => x.name).includes(body.name)) {
-    errFlag = true
-    errors.name = "must be unique"
   }
   if (!body.number) {
     errFlag = true
@@ -92,15 +97,15 @@ app.post("/api/persons", (req, res) => {
     return res.status(400).json(errors)
   }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: id
-  }
+  })
   
-  persons = persons.concat(person) 
   console.log("person added")
-  res.json(person)
+  person.save().then(savedPerson => {
+    res.json(savedPerson)
+  })
 })
 
 const PORT = process.env.PORT || 3001

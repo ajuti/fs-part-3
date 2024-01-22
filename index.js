@@ -6,7 +6,7 @@ const Person = require("./models/person")
 const errorHandler = require("./middlewares/errorHandlerMw.js")
 const unknownEndpoint = require("./middlewares/unknownEndpointMw.js")
 
-morgan.token("payload", function(req, res) { return JSON.stringify(req.body) })
+morgan.token("payload", function(req) { return JSON.stringify(req.body) })
 
 const app = express()
 
@@ -21,9 +21,10 @@ app.get('/api/persons', (req, res) => {
   })
 })
 
-app.get("/info", (req, res) => {
-  const len = persons.length
-  res.send(`Phonebook has info for ${len} ${len > 1 ? "people" : "person"}\n\n${new Date()}`)
+app.get("/info", (res) => {
+  Person.countDocuments({}, (count) => {
+    res.send(`Phonebook has info for ${count} ${count > 1 ? "people" : "person"}\n\n${new Date()}`)
+  })
 })
 
 app.get("/api/persons/:id", (req, res, next) => {
@@ -48,9 +49,9 @@ app.delete("/api/persons/:id", (req, res, next) => {
 })
 
 app.put("/api/persons/:id", (req, res, next) => {
-  const {name, number} = req.body
+  const { name, number } = req.body
 
-  Person.findByIdAndUpdate(req.params.id, {name, number}, {new: true, runValidators: true, context: 'query'})
+  Person.findByIdAndUpdate(req.params.id, { name, number }, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       console.log(updatedPerson)
       res.status(200).json(updatedPerson)
@@ -65,7 +66,7 @@ app.post("/api/persons", (req, res, next) => {
     name: body.name,
     number: body.number,
   })
-  
+
   person.save()
     .then(savedPerson => {
       res.json(savedPerson)
